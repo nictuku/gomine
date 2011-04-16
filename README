@@ -1,0 +1,8 @@
+gomine is a mod (server wrapper) for minecraft, written in Go.
+
+Current features:
+- Update the server's twitter status when a user connects.
+
+gomine was inspired by tztk[1], a cool mod written in Perl.
+
+[1] http://minecraft.topazstorm.com/
