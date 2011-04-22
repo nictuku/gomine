@@ -26,7 +26,7 @@ type eventHandler struct {
 }
 
 type event struct {
-	t *time.Time
+	t       *time.Time
 	message string
 	details []string // Parsed strings after regexp extraction with a matching eventHandler.
 }
@@ -45,15 +45,30 @@ func (ev *event) Resolve() {
 }
 
 var eventHandlers = []eventHandler{
-	handleLogin,
+	announceLogin,
+	twitJournal,
 }
 
-// Example:
-// 2011-04-15 20:18:29 [INFO] nictuku [/84.72.7.79:56179] logged in with entity id 125
-var handleLogin = eventHandler{
+// announceLogin will post to twitter when a user logs in to the server.
+var announceLogin = eventHandler{
+	// 2011-04-15 20:18:29 [INFO] nictuku [/84.72.7.79:56179] logged in with entity id 125
 	regexp.MustCompile(`([^ ]+) \[([^\]]+)\] logged in with entity id [0-9]+`),
 	func(ev *event) {
 		msg := fmt.Sprintf("User %v logged in!", ev.details[1])
+		fmt.Println("twit:", msg)
+		err := twitter.Update(msg)
+		if err != nil {
+			fmt.Println("Twitter error:", err)
+		}
+	},
+}
+
+// twitJournal will post a message from a user to twitter.
+var twitJournal = eventHandler{
+	// 2011-04-22 12:12:49 [INFO] nictuku tried command: twit foo
+	regexp.MustCompile(`([^ ]+) tried command: twit (.+)$`),
+	func(ev *event) {
+		msg := fmt.Sprintf("<%v> %v", ev.details[1], ev.details[2])
 		fmt.Println("twit:", msg)
 		err := twitter.Update(msg)
 		if err != nil {
